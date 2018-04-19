@@ -1,26 +1,23 @@
-CPP_OBJS= 
+C_OBJS= audio.o
 ASM_OBJS= RasPi_IO.o
 
-ASM_SRC= $(patsubst %.o,%.S,$(ASM_OBJS))
-C_SRC= $(patsubst %.o,%.cc,$(CPP+OBJS))
 
 # Linktime Flags
 LFLAGS=-g
 
-# C++ compiler flags
-CPPFLAGS=-g -I.
+CFLAGS=-g -I.
 
 # ASM compiler flags
 ASMFLAGS=-g -I.
 
-binary: ${CPP_OBJS} ${ASM_OBJS} bounce.o
-	g++ ${LFLAGS} -o $@ ${CPP_OBJS} ${ASM_OBJS} bounce.o
+binary: ${C_OBJS} ${ASM_OBJS} bounce.o
+	gcc ${LFLAGS} -o $@ ${C_OBJS} ${ASM_OBJS} bounce.o
 
-butt: ${CPP_OBJS} ${ASM_OBJS} RasPi_Button_LED.o
-	g++ ${LFLAGS} -o $@ ${CPP_OBJS} ${ASM_OBJS} RasPi_Button_LED.o
+butt: ${C_OBJS} ${ASM_OBJS} RasPi_Button_LED.o
+	gcc ${LFLAGS} -o $@ ${C_OBJS} ${ASM_OBJS} RasPi_Button_LED.o
 
-%.o: %.cc
-	g++ ${CPPFLAGS} -c $<
+%.o: %.c
+	gcc ${CFLAGS} -c $<
 
 %.o: %.S
 	gcc ${ASMFLAGS} -c $<

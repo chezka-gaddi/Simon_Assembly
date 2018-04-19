@@ -18,7 +18,10 @@
 	.equ	GPPUDCLK0, 0x0098
  	.equ	GPPUDCLK1, 0x009C 
 
-@@ 	.data
+    .data
+out:    .asciz  "%d\t%d\n"
+audio:  .asciz  "./piano2.wav"
+    .align  2
 @@ pofmt:	.asciz	"register offset is %08X and shift is %d\n"
 	.text
 
@@ -137,34 +140,6 @@ gpio_dir_output:
 	ldmfd	sp!, {pc}
 
 
-stall:
-    stmfd   sp!, {r4-r10, lr}
-    
-    mov     r1, #0
-    mov     r2, #0
-    mov     r3, #0
-    mov     r4, #0
-    mov     r5, #0
-    mov     r6, #0
-    mov     r7, #0
-    mvn     r8, #0
-one:
-    add     r1, r1, #1
-    cmp     r1, #0xC0000035
-    blt     one
-
-two:
-    add     r2, r2, #1
-    cmp     r2, r8
-    mov     r1, #0
-    blt     one
-
-    cmp     r0, #1
-    subgt   r0, r0, #1
-    blgt    stall
-
-    ldmfd   sp!, {r4-r10, pc}
-
 
 	.global	main
 main:	
@@ -173,64 +148,90 @@ main:
 	@@ map the devices into our address space
 	bl	    IO_init
 
-	@@ Load the Base Address of the GPIO device
+    mov     r0, #1
+    bl      beep
+
+    @@ Load the Base Address of the GPIO device
 	ldr	    r4, =gpiobase	@ load pointer to the address of the gpio device
 	ldr	    r4, [r4]	    @ load address of the gpio device
 
 	@@ Set the direction bits for the pins
-	mov	    r0, #4
-	bl	    gpio_dir_output
-	mov	    r0, #5
+	mov	    r0, #4          @ Green LED
 	bl	    gpio_dir_output
 	mov	    r0, #6
-	bl	    gpio_dir_output
-	mov	    r0, #12
-	bl	    gpio_dir_output
-	
-    mov	    r0, #22
-	bl	    gpio_dir_input
-	mov	    r0, #23
-	bl	    gpio_dir_input
-	mov	    r0, #24
-	bl	    gpio_dir_input
-    mov	    r0, #25
-	bl	    gpio_dir_input
-	
-
+	bl	    gpio_dir_output @ Orange LED
+	mov	    r0, #13
+	bl	    gpio_dir_output @ Yellow LED
+	mov	    r0, #20
+	bl	    gpio_dir_output @ Orange LED
 	mov	    r0, #22
+	bl	    gpio_dir_output @ Yellow LED
+    
+
+    mov	    r0, #5
+	bl	    gpio_dir_input  @ Green Button
+	mov	    r0, #12
+	bl	    gpio_dir_input  @ Orange Button
+	mov	    r0, #16
+	bl	    gpio_dir_input  @ Yellow Button
+    mov	    r0, #19
+	bl	    gpio_dir_input
+    mov	    r0, #21
+	bl	    gpio_dir_input
+	
+
+	mov	    r0, #5
 	mov	    r1, #2
 	bl	    set_pud
 
-	mov	    r0, #23
+	mov	    r0, #12
 	mov	    r1, #2
 	bl	    set_pud
 
-	mov	    r0, #24
+	mov	    r0, #16
 	mov	    r1, #2
 	bl	    set_pud
     
-    mov	    r0, #25
+    mov	    r0, #19
+	mov	    r1, #2
+	bl	    set_pud
+    
+    mov	    r0, #21
 	mov	    r1, #2
 	bl	    set_pud
 
 
+    mov     r7, #0
+    mov     r6, #0
     mov     r5, #0
 flash:
     mov     r1, #0
     mov     r2, #0
 
-    tst     r5, #1
-    orrne   r1, r1, #0x10
-    orreq   r2, r2, #0x10
-    tst     r5, #2
-    orrne   r1, r1, #0x20
-    orreq   r2, r2, #0x20
+    @ flash blue led
+    tst     r5, #0b10000
+    orrne   r1, r1, #0x100000
+    orreq   r2, r2, #0x100000
+
+    @ flash red led
+    tst     r5, #0b10100
+    orrne   r1, r1, #0x400000
+    orreq   r2, r2, #0x400000
+
+    @ flash yellow led
+    tst     r5, #0b11000
+    orrne   r1, r1, #0x2000
+    orreq   r2, r2, #0x2000
+    
+    @ flash orange led
     tst     r5, #0b100
     orrne   r1, r1, #0x40
     orreq   r2, r2, #0x40
+
+    @ flash green led
     tst     r5, #0b1000
-    orrne   r1, r1, #0x1000
-    orreq   r2, r2, #0x1000
+    orrne   r1, r1, #0x10
+    orreq   r2, r2, #0x10
     
     str     r2, [r4, #GPSET0]
     str     r1, [r4, #GPCLR0]
@@ -239,10 +240,79 @@ flash:
     addlt   r5, r5, #1
     movge   r5, #0
 
-    mov     r0, #1000
-    bl      stall
-    b       flash
+    mov     r0, #0x2000
+    bl      usleep
+    add     r7, r7, #1
+    cmp     r7, #0xC000003F
+    blt     flash
+    cmp     r7, #0xC000003F
+    blt     flash
 
+
+    mov     r1, #0
+    mov     r2, #0
+    orr     r1, r1, #0x10
+    str     r2, [r4, #GPSET0]
+    str     r1, [r4, #GPCLR0]
+    mov     r0, #1
+    bl      sleep
+    mov     r1, #0
+    mov     r2, #0
+    orr     r2, r2, #0x10
+    str     r2, [r4, #GPSET0]
+    str     r1, [r4, #GPCLR0]
+
+
+
+    orr     r1, r1, #0x20
+    str     r2, [r4, #GPSET0]
+    str     r1, [r4, #GPCLR0]
+    mov     r0, #1
+    bl      sleep
+    mov     r1, #0
+    mov     r2, #0
+    orr     r2, r2, #0x20
+    str     r2, [r4, #GPSET0]
+    str     r1, [r4, #GPCLR0]
+
+
+
+    orr     r1, r1, #0x40
+    str     r2, [r4, #GPSET0]
+    str     r1, [r4, #GPCLR0]
+    mov     r0, #1
+    bl      sleep
+    mov     r1, #0
+    mov     r2, #0
+    orr     r2, r2, #0x40
+    str     r2, [r4, #GPSET0]
+    str     r1, [r4, #GPCLR0]
+
+
+
+    orr     r1, r1, #0x1000
+    str     r2, [r4, #GPSET0]
+    str     r1, [r4, #GPCLR0]
+    mov     r0, #1
+    bl      sleep
+    mov     r1, #0
+    mov     r2, #0
+    orr     r2, r2, #0x1000
+    str     r2, [r4, #GPSET0]
+    str     r1, [r4, #GPCLR0]
+
+
+
+    orr     r1, r1, #0x2000
+    str     r2, [r4, #GPSET0]
+    str     r1, [r4, #GPCLR0]
+    mov     r0, #1
+    bl      sleep
+    mov     r1, #0
+    mov     r2, #0
+    orr     r2, r2, #0x2000
+    str     r2, [r4, #GPSET0]
+    str     r1, [r4, #GPCLR0]
 
 
 loop:
@@ -268,6 +338,10 @@ loop:
     tst	    r0, #(1<<25)	    @ check state of pin 25
 	orreq	r1, r1, #0x1000	    @ if should be set (LED off)
 	orrne	r2, r2, #0x1000	    @ if should be clear (LED on)
+    
+    tst	    r0, #(1<<26)	    @ check state of pin 25
+	orreq	r1, r1, #0x2000	    @ if should be set (LED off)
+	orrne	r2, r2, #0x2000	    @ if should be clear (LED on)
 
 	str	    r2, [r4, #GPSET0]   @ set some pins
 	str	    r1, [r4, #GPCLR0]   @ clear some pins
