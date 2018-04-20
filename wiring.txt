@@ -1,0 +1,19 @@
+Upper (U):
+    Black   Blue Button     G19
+    Red     Blue LED        G20     100000
+    Green   Red Button      G21
+    Yellow  Red LED         G22     400000
+
+
+Lower (L):
+    Black   Yellow Button   G16
+    Red     Yellow LED      G13     2000
+    Green   Orange Button   G12
+    Yellow  Orange LED      G6      40
+    
+
+Power (Black):
+    Black   Ground
+    Red     Power
+    Green   Green Button    G5
+    Yellow  Green LED       G4      10

@@ -1,25 +1,33 @@
 @@@ Raspberry Pi version
 	.equ	SHORT_DELAY,	50
-	@@  These are the offsets for the GPIO registers that we will use
-	.equ	GPFSEL0,   0x0000
-	.equ	GPFSEL1,   0x0004
-	.equ	GPFSEL2,   0x0008
-	.equ	GPFSEL3,   0x000C
-	.equ	GPFSEL4,   0x0010
-	.equ	GPFSEL5,   0x0014
-	.equ	GPSET0,    0x001C
-	.equ	GPSET1,    0x0020
-	.equ	GPCLR0,    0x0028	
-	.equ	GPCLR1,    0x002c	
-	.equ	GPLEV0,    0x0034
+	
+    @@  These are the offsets for the GPIO registers that we will use
+	.equ	GPFSEL0,    0x0000
+	.equ	GPFSEL1,    0x0004
+	.equ	GPFSEL2,    0x0008
+	.equ	GPFSEL3,    0x000C
+	.equ	GPFSEL4,    0x0010
+	.equ	GPFSEL5,    0x0014
+	.equ	GPSET0,     0x001C
+	.equ	GPSET1,     0x0020
+	.equ	GPCLR0,     0x0028	
+	.equ	GPCLR1,     0x002c	
+	.equ	GPLEV0,     0x0034
 
-	.equ	GPPUD,     0x0094
-	.equ	GPPUDCLK0, 0x0098
- 	.equ	GPPUDCLK1, 0x009C 
+    .equ    TMR_BASE,   0x3000
+    .equ    TMR_CNT,    0x4
 
-@@ 	.data
+	.equ	GPPUD,      0x0094
+	.equ	GPPUDCLK0,  0x0098
+ 	.equ	GPPUDCLK1,  0x009C 
+
+    .data
+out:    .asciz  "%d\t%d\n"
+audio:  .asciz  "./piano2.wav"
+    .align  2
 @@ pofmt:	.asciz	"register offset is %08X and shift is %d\n"
-	.text
+	
+    .text
 
 @@@ enable/disable the internal pullup/pulldown resistors
 @@@ set_pud(gpio_pin_num, direction)
@@ -39,8 +47,8 @@ set_pud:
 w1:	
     subs	r2, r2, #1
  	bcc	    w1
- 	
-    @@ Write to GPPUDCLK0 to clock the signals into GPIO 22,23,24
+
+ 	@@ Write to GPPUDCLK0 to clock the signals into GPIO 22,23,24
  	mov	    r2, #1
 	lsl	    r2, r2, r0
  	str	    r2, [r3, #GPPUDCLK0]
@@ -84,8 +92,8 @@ pin_offset:
 	mov	    r3, #GPFSEL5
 
 have_offset:
-	add	    r0, r0, #10	@ make 0<=r0<=9
-	add	    r0, r0, r0, asl #1 @ r0 *= 3
+	add	    r0, r0, #10	        @ make 0<=r0<=9
+	add	    r0, r0, r0, asl #1  @ r0 *= 3
 
 	@@ stmfd	sp!,{r0-r3,lr}
 	@@ mov	r2,r0
@@ -100,8 +108,8 @@ have_offset:
 @@@ gpio_dir_input sets the pin specified in r0 to be an input pin
 gpio_dir_input:
 	stmfd	sp!, {lr}
-	
-    @@ Load the Base Address of the GPIO device
+
+	@@ Load the Base Address of the GPIO device
 	ldr	    r1, =gpiobase	@ load pointer to the address of the gpio device
 	ldr	    r1, [r1]		@ load address of the gpio device
 	bl	    pin_offset 	    @ get the offset in r3 and shift in r0
@@ -119,7 +127,8 @@ gpio_dir_input:
 @@@ gpio_dir_output sets the pin specified in r0 to be an output pin
 gpio_dir_output:
 	stmfd	sp!,{lr}
-	@@ Load the Base Address of the GPIO device
+	
+    @@ Load the Base Address of the GPIO device
 	ldr	    r1, =gpiobase	@ load pointer to the address of the gpio device
 	ldr	    r1, [r1]		@ load address of the gpio device
 	bl	    pin_offset 	    @ get the offset in r3 and shift in r0
@@ -134,7 +143,8 @@ gpio_dir_output:
 	orr	    r2, r2, r3	    @ set the 3 bits
 	str	    r2, [r1]		@ write the FPFSEL register
 	ldmfd	sp!, {pc}
-	
+
+
 
 	.global	main
 main:	
@@ -143,100 +153,55 @@ main:
 	@@ map the devices into our address space
 	bl	    IO_init
 
-	@@ Load the Base Address of the GPIO device
-	ldr	    r4, =gpiobase   @ load pointer to the address of the gpio device
-	ldr	    r4, [r4]        @ load address of the gpio device
+    @@ Load the Base Address of the GPIO device
+	ldr	    r4, =gpiobase	@ load pointer to the address of the gpio device
+	ldr	    r4, [r4]	    @ load address of the gpio device
 
 	@@ Set the direction bits for the pins
-	@@ Set LED lights as output 
-    mov	    r0, #4              @ GPIO 4: green light
+	mov	    r0, #4          @ Green LED
 	bl	    gpio_dir_output
-	mov	    r0, #5              @ GPIO 5: red light
-	bl	    gpio_dir_output
-	mov	    r0, #6              @ GPIO 6: yellow light
-	bl	    gpio_dir_output
-	mov	    r0, #12             @ GPIO 12: blue light
-	bl	    gpio_dir_output
-	mov	    r0, #13             @ GPIO 13: orange light
-	bl	    gpio_dir_output
-	
-    @@ Set switches as inputs
-    mov	    r0, #22             @ GPIO 22: green switch
-	bl	    gpio_dir_input
-	mov	    r0, #23             @ GPIO 23: red switch
-	bl	    gpio_dir_input
-	mov	    r0, #24             @ GPIO 24: yellow switch
-	bl	    gpio_dir_input
-    mov	    r0, #25             @ GPIO 25: blue switch
-	bl	    gpio_dir_input
-    mov	    r0, #26             @ GPIO 26: orange switch
-	bl	    gpio_dir_input
-	
-    @@ Enable pullup and pulldown resistors
+	mov	    r0, #6
+	bl	    gpio_dir_output @ Orange LED
+	mov	    r0, #13
+	bl	    gpio_dir_output @ Yellow LED
+	mov	    r0, #20
+	bl	    gpio_dir_output @ Red LED
 	mov	    r0, #22
-	mov	    r1, #2
-	bl	    set_pud
-
-	mov	    r0, #23
-	mov	    r1, #2
-	bl	    set_pud
-
-	mov	    r0, #24
-	mov	    r1, #2
-	bl	    set_pud
+	bl	    gpio_dir_output @ Blue LED
     
-    mov	    r0, #25
-	mov	    r1, #2
-	bl	    set_pud
 
-    mov	    r0, #26
-	mov	    r1, #2
-	bl	    set_pud
-
-
-    @@ play audio for selecting a game mode
-	ldr 	r0, [r4,#GPLEV0]
-    
-    tst     r0, #(1<<22)
-    bleq    game1
-
-    tst     r0, #(1<<23)
-    bleq    game2
-
-
-loop:
-	@@ Read the state of the buttons
-	@@ Read GPIO Level Register 0 (GPLEV0)
-	ldr 	r0, [r4,#GPLEV0]
-
-	mov	    r1, #0		@ will be used to set outputs
-	mov	    r2, #0		@ will be used to clear outputs
-
-    tst	    r0, #(1<<22)	    @ check state of pin 22
-	orreq	r1, r1, #0x10	    @ if should be set (LED off)
-	orrne	r2, r2, #0x10	    @ if should be clear (LED on)
-
-	tst	    r0, #(1<<23)	    @ check state of pin 23
-	orreq	r1, r1, #0x20	    @ if should be set (LED off)
-	orrne	r2, r2, #0x20	    @ if should be clear (LED on)
-
-	tst	    r0, #(1<<24)	    @ check state of pin 24
-	orreq	r1, r1, #0x40	    @ if should be set (LED off)
-	orrne	r2, r2, #0x40	    @ if should be clear (LED on)
+    mov	    r0, #5
+	bl	    gpio_dir_input  @ Green Button
+	mov	    r0, #12
+	bl	    gpio_dir_input  @ Orange Button
+	mov	    r0, #16
+	bl	    gpio_dir_input  @ Yellow Button
+    mov	    r0, #19
+	bl	    gpio_dir_input  @ Red Button
+    mov	    r0, #21
+	bl	    gpio_dir_input  @ Blue Button
 	
-    tst	    r0, #(1<<25)	    @ check state of pin 25
-	orreq	r1, r1, #0x1000     @ if should be set (LED off)
-	orrne	r2, r2, #0x1000     @ if should be clear (LED on)
 
-    tst	    r0, #(1<<26)	    @ check state of pin 26
-	orreq	r1, r1, #0x2000     @ if should be set (LED off)
-	orrne	r2, r2, #0x2000     @ if should be clear (LED on)
+	mov	    r0, #5
+	mov	    r1, #2
+	bl	    set_pud
+	mov	    r0, #12
+	mov	    r1, #2
+	bl	    set_pud
+	mov	    r0, #16
+	mov	    r1, #2
+	bl	    set_pud
+    mov	    r0, #19
+	mov	    r1, #2
+	bl	    set_pud
+    mov	    r0, #21
+	mov	    r1, #2
+	bl	    set_pud
 
+    bl      start_sequence
 
+    //mov     r0, #
 
-    str	    r2, [r4, #GPSET0]	    @ set some pins
-	str	    r1, [r4, #GPCLR0]	    @ clear some pins
+    bl      original
 
-	b	    loop
-
-	ldmfd	sp!, {r4, pc}
+    ldmfd	sp!, {r4, pc}

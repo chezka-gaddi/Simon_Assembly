@@ -1,5 +1,5 @@
-C_OBJS= audio.o
-ASM_OBJS= RasPi_IO.o
+C_OBJS= audio.o misc.o
+ASM_OBJS= RasPi_IO.o LED.o main.o games.o
 
 
 # Linktime Flags
@@ -10,11 +10,8 @@ CFLAGS=-g -I.
 # ASM compiler flags
 ASMFLAGS=-g -I.
 
-binary: ${C_OBJS} ${ASM_OBJS} bounce.o
-	gcc ${LFLAGS} -o $@ ${C_OBJS} ${ASM_OBJS} bounce.o
-
-butt: ${C_OBJS} ${ASM_OBJS} RasPi_Button_LED.o
-	gcc ${LFLAGS} -o $@ ${C_OBJS} ${ASM_OBJS} RasPi_Button_LED.o
+simon: ${C_OBJS} ${ASM_OBJS}
+	gcc ${LFLAGS} -o $@ ${C_OBJS} ${ASM_OBJS}
 
 %.o: %.c
 	gcc ${CFLAGS} -c $<
