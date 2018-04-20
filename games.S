@@ -23,6 +23,8 @@ out:    .asciz  "# of Notes: %d\n"
 
     .text
     .global original
+
+
 original:
     stmfd   sp!, {r4-r11, lr}
     
@@ -32,29 +34,33 @@ original:
     mov     r4, r0      @ r4: address of array
 
     mov     r5, #0
+
+@@ fill gets a random number, stores it into an array, plays the sequence to the user
+@@ and calls input to read in the users reply. This is a loop that goes through until 
+@@ the array is full. If the max sequence is done correctly outputs a cheering sound.	
 fill:
-    bl      int_rand
-    str     r0, [r4, r5, lsl #2]
-    add     r5, r5, #1
+    bl      int_rand			@gets a random number
+    str     r0, [r4, r5, lsl #2]	@stores it into the array at current offset
+    add     r5, r5, #1			@incraments array size
     
     mov     r0, r4
     mov     r1, r5
     bl      printArr
 
-    mov     r0, r4
-    mov     r1, r5
-    bl      playback      
+    mov     r0, r4			@moves array address into r0 
+    mov     r1, r5			@moves array size into r1
+    bl      playback      		@calls playback to output current sequence
 
-    mov     r0, r4
-    mov     r1, r5
-    bl      input
+    mov     r0, r4			@moves array address into r0
+    mov     r1, r5			@moves array size into r1
+    bl      input			@calls input to read in players reply
     
 
-    cmp     r5, #5
-    blt     fill
-
-    mov     r0, #6
-    bl      audio
+    cmp     r5, #5			@checks to see if array is full
+    blt     fill			@if not full recall fill
+					
+    mov     r0, #6			
+    bl      audio			@call audio to output cheering
     ldmfd   sp!, {r4-r11, pc}
     
     
@@ -99,7 +105,7 @@ loop:
     b	    loop
 
 exit:
-    mov     r8, r0
+    mov     r8, r0		
     mov     r1, #0
     //mov     r1, #0x35C00
     bl      blink
