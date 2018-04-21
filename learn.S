@@ -2,7 +2,7 @@ learn:
 	stmfd   sp!, {r4-r11, lr}
     
 	@ allocate array of game sequence
-	mov     r0, #18
+	mov     r0, #17
 	bl      malloc
 	mov	r4,r0
 
