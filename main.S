@@ -148,7 +148,7 @@ gpio_dir_output:
 
 	.global	main
 main:	
-    stmfd	sp!, {r4,lr}
+    stmfd	sp!, {r4, lr}
 
 	@@ map the devices into our address space
 	bl	    IO_init
@@ -200,8 +200,9 @@ main:
 
     bl      start_sequence
 
-    //mov     r0, #
-
-    bl      original
+    bl      gamemode
+    
+    //bl      learn
+    //bl      original
 
     ldmfd	sp!, {r4, pc}

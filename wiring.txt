@@ -17,3 +17,12 @@ Power (Black):
     Red     Power
     Green   Green Button    G5
     Yellow  Green LED       G4      10
+
+
+
+    Buttons
+        G19
+        G21
+        G16
+        G12
+        G5

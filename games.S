@@ -23,48 +23,183 @@ out:    .asciz  "# of Notes: %d\n"
 
     .text
     .global original
-
-
 original:
     stmfd   sp!, {r4-r11, lr}
-    
-    @ allocate array of game sequence
-    mov     r0, #5
-    bl      malloc
-    mov     r4, r0      @ r4: address of array
 
-    mov     r5, #0
+    mov     r0, #13
+    bl      audio
+
+    mov     r0, #1
+    bl      led_on
+    mov     r0, #14
+    bl      audio
+    mov     r0, #1
+    bl      led_off
+
+    mov     r0, #1
+    bl      sleep
+
+    mov     r0, #2
+    bl      led_on
+    mov     r0, #15
+    bl      audio
+    mov     r0, #2
+    bl      led_off
+    
+    mov     r0, #1
+    bl      sleep
+    
+    mov     r0, #3
+    bl      led_on
+    mov     r0, #16
+    bl      audio
+    mov     r0, #3
+    bl      led_off
+   
+    
+    bl      console
+    mov     r7, r0
+    bl      blink
+    mov     r0, r7
+
+
+    @@ initialize # of buttons to 4
+    mov     r7, #4
+
+    cmp     r0, #1
+    moveq   r6, #0xD7000  @ r6: speed
+    cmp     r0, #2
+    moveq   r6, #0          @ r6: speed
+    cmp     r0, #3
+    moveq   r6, #0          @ r6: speed
+    moveq   r7, #5
+
+    @ allocate array of game sequence
+    mov     r8, #7
+    sub     sp, sp, r8, lsl #2
+    mov     r4, sp          @ r4: address of array
+    mov     r5, #0          @ r5: counter
 
 @@ fill gets a random number, stores it into an array, plays the sequence to the user
 @@ and calls input to read in the users reply. This is a loop that goes through until 
 @@ the array is full. If the max sequence is done correctly outputs a cheering sound.	
 fill:
-    bl      int_rand			@gets a random number
-    str     r0, [r4, r5, lsl #2]	@stores it into the array at current offset
-    add     r5, r5, #1			@incraments array size
+    mov     r0, r7
+    bl      int_rand			    @ gets a random number
+    str     r0, [r4, r5, lsl #2]	@ stores it into the array at current offset
+    add     r5, r5, #1			    @ increments array size
+
+    mov     r0, r4			@ moves array address into r0 
+    mov     r1, r5			@ moves array size into r1
+    mov     r3, r6          @ moves playback speed to r3
+    bl      playback      	@ calls playback to output current sequence
+
+    mov     r0, r4			@ moves array address into r0
+    mov     r1, r5			@ moves array size into r1
+    bl      input			@ calls input to read in players reply
+   
+    mov     r0, r7
+    bl      usleep
+
+    cmp     r5, r8			@ checks to see if array is full
+    blt     fill			@ if not full recall fill
+	
+
+    mov     r0, #6			
+    bl      audio			@ call audio to output cheering
+    
+    add     sp, sp, r8, lsl #2
+    ldmfd   sp!, {r4-r11, pc}
+    
+
+
+    .global learn
+learn:
+	stmfd   sp!, {r4-r11, lr}
+    
+	mov     r5, #17
+    sub     sp, sp, r5, lsl #2
+    mov     r4, sp
+
+    mov     r1, #1
+    mov     r2, #2
+    mov     r3, #3
+
+    str     r1, [r4]    
+    str     r2, [r4, #4]
+    str     r3, [r4, #8]
+
+    str     r1, [r4, #12]
+    str     r2, [r4, #16]
+    str     r3, [r4, #20]
+    
+    str     r1, [r4, #24]
+    str     r1, [r4, #28]
+    str     r1, [r4, #32]
+    str     r1, [r4, #36]
+
+    str     r2, [r4, #40]
+    str     r2, [r4, #44]
+    str     r2, [r4, #48]
+    str     r2, [r4, #52]
+    
+    str     r1, [r4, #56]    
+    str     r2, [r4, #60]
+    str     r3, [r4, #64]
     
     mov     r0, r4
     mov     r1, r5
     bl      printArr
 
-    mov     r0, r4			@moves array address into r0 
-    mov     r1, r5			@moves array size into r1
-    bl      playback      		@calls playback to output current sequence
+    mov     r0, r4
+    mov	    r1, r5
+	bl 	    playback
 
-    mov     r0, r4			@moves array address into r0
-    mov     r1, r5			@moves array size into r1
-    bl      input			@calls input to read in players reply
+	mov	    r0, r4
+	mov	    r1, r5
+	bl	    input
+	
+    add     sp, sp, r5, lsl #2
+	ldmfd	sp!, {r4-r11, pc}
+
+
+
+
+    .global record
+record:
+    stmfd   sp!, {r4-r11, lr}
     
+    @ allocate array
+    mov     r6, #5          @ r6: array size
+    sub     sp, sp, r6, lsl #2
+    mov     r5, sp          @ r5: address of array
+    
+    ldr     r4, =gpiobase   @ r4: gpiobase
+    ldr     r4, [r4]
 
-    cmp     r5, #5			@checks to see if array is full
-    blt     fill			@if not full recall fill
-					
-    mov     r0, #6			
-    bl      audio			@call audio to output cheering
+    mov     r7, #0          @ r7: iterator
+rec_loop:
+    bl      console
+    str     r0, [sp, r7, lsl #2]	
+    mov     r1, #0
+    bl      blink
+
+    add     r7, r7, #1
+    cmp     r7, r6
+    blt     rec_loop
+    
+    mov     r0, r5
+    mov     r1, r6
+    bl      playback
+
+    mov     r0, #6
+    bl      audio
+
+    add     sp, sp, r6, lsl #2
     ldmfd   sp!, {r4-r11, pc}
-    
-    
-    
+
+
+
     .global input
 input:
     stmfd   sp!, {r4-r11, lr}
@@ -75,39 +210,10 @@ input:
     mov     r6, r1          @ # of elements in array
 
     mov     r7, #0
-loop:    
-    @@ Read the state of the buttons
-	@@ Read GPIO Level Register 0 (GPLEV0)
-	ldr 	r3, [r4, #GPLEV0]
-    mov     r0, #0
-
-	mov	    r1, #0		@ will be used to set outputs
-	mov	    r2, #0		@ will be used to clear outputs
-
-    tst	    r3, #(1<<19)	    @ check state of pin 22
-    moveq   r0, #1
-
-	tst	    r3, #(1<<21)	    @ check state of pin 23
-    moveq   r0, #2
-
-	tst	    r3, #(1<<16)	    @ check state of pin 24
-    moveq   r0, #3
-	
-    tst	    r3, #(1<<12)	    @ check state of pin 25
-    moveq   r0, #4
-    
-    tst	    r3, #(1<<5)	        @ check state of pin 25
-    moveq   r0, #5
-
-    cmp     r0, #0
-    bne     exit
-
-    b	    loop
-
-exit:
+in_loop:    
+    bl      console
     mov     r8, r0		
     mov     r1, #0
-    //mov     r1, #0x35C00
     bl      blink
 
     ldr     r1, [r5, r7, lsl #2]
@@ -115,6 +221,6 @@ exit:
     bne     fail
     add     r7, r7, #1
     cmp     r7, r6
-    blt     loop
+    blt     in_loop
 
 	ldmfd	sp!, {r4-r11, pc}

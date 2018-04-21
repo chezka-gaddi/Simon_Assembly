@@ -2,7 +2,8 @@
     .equ    GPFSEL0,    0x0000
     .equ    GPSET0,     0x001C
     .equ    GPCLR0,     0x0028
-   
+
+
     .text
     .global start_sequence
 start_sequence:
@@ -71,6 +72,7 @@ flash:
     ldmfd   sp!, {r4-r7, pc}
 
 
+
 @@ void blink( int key, int time )
     .global blink
 blink:
@@ -113,25 +115,87 @@ blink:
     mov     r0, r6                  @ #0x35C00
 	bl		usleep 
     
+    
     ldmfd   sp!, {r4-r6, pc}
+  
+
+
+@@ void on( int switch )
+    .global led_on
+led_on:
+    stmfd   sp!, {r4, lr}
+
+    @@ r3, the lights to be turned on
+    cmp     r0, #1
+    moveq   r3, #20
+    cmp     r0, #2
+    moveq   r3, #22
+    cmp     r0, #3
+    moveq   r3, #13
+    cmp     r0, #4
+    moveq   r3, #6
+    cmp     r0, #5
+    moveq   r3, #4
     
+    ldr     r4, =gpiobase
+    ldr     r4, [r4]
+
+    mov     r2, #0
+    mov     r1, #1
+    lsl     r1, r1, r3
+
+    str     r2, [r4, #GPSET0]
+    str     r1, [r4, #GPCLR0]
+
+    ldmfd   sp!, {r4, pc}
+
+
+@@ off( int switch )
+    .global led_off
+led_off:
+    stmfd   sp!, {r4, lr}
+
+    @@ r3, the lights to be turned on
+    cmp     r0, #1
+    moveq   r3, #20
+    cmp     r0, #2
+    moveq   r3, #22
+    cmp     r0, #3
+    moveq   r3, #13
+    cmp     r0, #4
+    moveq   r3, #6
+    cmp     r0, #5
+    moveq   r3, #4
     
-@@ void playback( int *array[] )
+    ldr     r4, =gpiobase
+    ldr     r4, [r4]
+    
+    mov     r1, #0
+    mov     r2, #1
+    lsl     r2, r2, r3
+
+    str     r2, [r4, #GPSET0]
+    str     r1, [r4, #GPCLR0]
+    
+    ldmfd   sp!, {r4, pc}
+
+
+    
+@@ void playback( int *array[], int size, int speed )
     .global playback
 playback:
-    stmfd   sp!, {r4-r6, lr}
+    stmfd   sp!, {r4-r7, lr}
     
     mov     r4, r0          @ r4: array address
     mov     r5, r1          @ r5: array size
-
+    mov     r7, r3
 
     mov     r6, #0
 play_loop:
     cmp     r6, r5
     bge     exit_play
 
-    mov     r1, #0
-    //mov     r1, #0x35C00
+    mov     r1, r7
     ldr     r0, [r4, r6, lsl #2]
     bl      blink
     
@@ -140,4 +204,4 @@ play_loop:
 
 
 exit_play:
-    ldmfd   sp!, {r4-r6, pc}
+    ldmfd   sp!, {r4-r7, pc}
