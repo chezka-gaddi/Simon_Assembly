@@ -76,10 +76,9 @@ gamemode:
     bleq    record
 
     cmp     r4, #5
-    moveq   r0, #18
+    moveq   r0, #22
     bleq    audio
-	cmp	r4,#5
-	bleq    exit
+    bleq    exit
 
     ldmfd   sp!, {r4, pc}
 

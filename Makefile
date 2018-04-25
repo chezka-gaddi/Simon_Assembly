@@ -22,7 +22,7 @@ LAST_NAME=Gaddi
 # ASMOBJS list (see commented example below), and make will find the
 # .S file. Do "make clean" to force a complete rebuild.
 
-ASMOBJS = main.o RasPi_IO.o games.o LED.o rand.o
+ASMOBJS = main.o RasPi_IO.o games.o LED.o rand.o classic.o learn.o record.o lights_out.o
 
 CC = gcc
 COBJS = misc.o

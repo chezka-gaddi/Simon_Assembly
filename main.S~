@@ -198,8 +198,8 @@ main:
 	mov	    r1, #2
 	bl	    set_pud
 
-    bl      start_sequence
-    
+    //bl      start_sequence
+    //bl      lights_out
 
 loop:
     bl      gamemode

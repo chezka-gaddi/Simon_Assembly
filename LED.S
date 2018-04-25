@@ -59,63 +59,38 @@ flash:
 
     
     mov     r0, #1
+    mov     r1, #1
     bl      blink
     mov     r0, #2
+    mov     r1, #2
     bl      blink
     mov     r0, #3
+    mov     r1, #3
     bl      blink
     mov     r0, #4
+    mov     r1, #4
     bl      blink
     mov     r0, #5
+    mov     r1, #5
     bl      blink
 
     ldmfd   sp!, {r4-r7, pc}
 
 
 
-@@ void blink( int key, int time )
+@@ void blink( int button, int audio)
     .global blink
 blink:
     stmfd   sp!, {r4-r6, lr}
-    mov     r6, r1
+    mov     r4, r0          @ r4: button pressed
+    mov     r5, r1          @ r5: audio to play
 
-    cmp     r0, #1
-    moveq   r3, #20
-    cmp     r0, #2
-    moveq   r3, #22
-    cmp     r0, #3
-    moveq   r3, #13
-    cmp     r0, #4
-    moveq   r3, #6
-    cmp     r0, #5
-    moveq   r3, #4
-
-
-    ldr     r4, =gpiobase
-    ldr     r4, [r4]
-    
-    mov     r1, #0
-    mov     r2, #0
-    
-    mov     r5, #1
-    lsl     r5, r5, r3
-    orr     r1, r1, r5
-
-    str     r2, [r4, #GPSET0]
-    str     r1, [r4, #GPCLR0]
+    bl      led_on
+    mov     r0, r5
     bl      audio
+    mov     r0, r4
+    bl      led_off
 
-    mov     r1, #0
-    mov     r2, #0
-    orr     r2, r2, r5
-
-    str     r2, [r4, #GPSET0]
-    str     r1, [r4, #GPCLR0]
-    
-    mov     r0, r6                  @ #0x35C00
-	bl		usleep 
-    
-    
     ldmfd   sp!, {r4-r6, pc}
   
 
@@ -148,6 +123,7 @@ led_on:
     str     r1, [r4, #GPCLR0]
 
     ldmfd   sp!, {r4, pc}
+
 
 
 @@ off( int switch )
@@ -188,7 +164,7 @@ playback:
     
     mov     r4, r0          @ r4: array address
     mov     r5, r1          @ r5: array size
-    mov     r7, r3
+    mov     r7, r2          @ r7: playback speed
 
     mov     r6, #0
 play_loop:
@@ -197,6 +173,7 @@ play_loop:
 
     mov     r1, r7
     ldr     r0, [r4, r6, lsl #2]
+    mov     r1, r0
     bl      blink
     
     add     r6, r6, #1
@@ -204,4 +181,25 @@ play_loop:
 
 
 exit_play:
+    ldmfd   sp!, {r4-r7, pc}
+
+
+
+@@ void no_lights_play( int *array[], int size
+    .global no_lights_play
+no_lights_play:
+    stmfd   sp!, {r4-r7, lr}
+
+    mov     r4, r0          @ r4: array address
+    mov     r5, r1          @ r5: array size
+
+    mov     r6, #0          @ r6: counter
+loop_nol:
+    ldr     r0, [r4, r6, lsl #2]
+    bl      audio
+    
+    add     r6, r6, #1
+    cmp     r6, r5
+    blt     loop_nol
+
     ldmfd   sp!, {r4-r7, pc}

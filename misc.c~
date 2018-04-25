@@ -80,10 +80,6 @@ int audio( int num )
     else if( num == 22 )
         system( "aplay /home/pi/Documents/Programs/Prog2/sounds/ready.wav" );
 
-    else if( num == 23 )
-      system( "aplay /home/pi/Documents/Programs/Prog2/sounds/exit.wav" );
-
-    
     return num;
 }
 
