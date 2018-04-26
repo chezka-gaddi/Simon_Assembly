@@ -5,21 +5,21 @@
 classic:
     stmfd   sp!, {r4-r11, lr}
 
-    mov     r0, #13
+    mov     r0, #13     @ play select difficulty audio
     bl      audio
 
-    mov     r0, #1
-    mov     r1, #14
+    mov     r0, #1      @ flash the first LED
+    mov     r1, #14     @ play audio for Easy
     mov     r2, #0
     bl      blink
     
-    mov     r0, #2
-    mov     r1, #15
+    mov     r0, #2      @ flash the second LED
+    mov     r1, #15     @ play the audio for Medium
     mov     r2, #0
     bl      blink
     
-    mov     r0, #3
-    mov     r1, #16
+    mov     r0, #3      @ flash the third LED
+    mov     r1, #16     @ play audio for Hard
     mov     r2, #0
     bl      blink
    
@@ -30,21 +30,21 @@ classic:
     mov     r1, r0
     mov     r2, #0
     bl      blink
-    mov     r0, r7
+    mov     r0, r7      @ r7: button pressed
 
-    mov     r0, #22
+    mov     r0, #22     @ play Ready, Go! audio
     bl      audio
 
     @@ initialize # of buttons to 4
     mov     r7, #4
 
     cmp     r0, #1
-    moveq   r6, #0xD70000   @ r6: speed
+    moveq   r6, #0xD70000   @ r6: speed for Easy setting
     cmp     r0, #2
-    moveq   r6, #0          @ r6: speed
+    moveq   r6, #0          @ r6: speed for Medium setting
     cmp     r0, #3
-    moveq   r6, #0          @ r6: speed
-    moveq   r7, #5
+    moveq   r6, #0          @ r6: speed for Hard setting
+    moveq   r7, #5          @ increase the number of buttons available for gameplay
 
     @ allocate array of game sequence
     mov     r8, #5

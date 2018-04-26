@@ -6,12 +6,13 @@
 lights_out:
     stmfd   sp!, {r4-r11, lr}
 
-    mov     r0, #21
+    mov     r0, #21             @ play Memorize buttons to sound audio
     bl      audio
 
-    bl      start_sequence
+    bl      start_sequence      @ play all of the light and their corresponding
+                                @ sound again for the player
 
-    mov     r0, #22
+    mov     r0, #22             @ play Ready, Go! audio
     bl      audio
     
     mov     r5, #5              @ r5: size of array
@@ -42,12 +43,12 @@ check_loop:
     bl      audio
     
     ldr     r1, [r4, r7, lsl #2] 
-    cmp     r0, r1
-    blne    fail    
+    cmp     r0, r1              @ compare the button press to the array
+    blne    fail                @ play booing audio and return back to gamemode
     add     r7, r7, #1
     cmp     r7, r6
-    blt     check_loop
+    blt     check_loop          @ else, check other button presses
     
     cmp     r6, r5
-    blt     lights_loop
-    bl      win
+    blt     lights_loop         @ continue playing by adding more notes to sequence
+    bl      win                 @ play claps and return back to gamemode

@@ -1,3 +1,5 @@
+
+@@ void input( int *arr[] )
 @@ reads in the buttons and checks if the right buttons are pressed
     .global input
 input:
@@ -20,26 +22,26 @@ in_loop:
     bne     fail            @ sound boos and exit if the wrong button was pressed
     add     r6, r6, #1
     cmp     r6, r5
-    blt     in_loop
+    blt     in_loop         @ continue to check next button press
 
 	ldmfd	sp!, {r4-r11, pc}
 
 
-
+@@ void fail()
     .global fail
 fail:
-    mov     r0, #7
+    mov     r0, #7          @ play boos
     bl      audio
 
-    add     sp, sp, #20
-    bl      gamemode
+    add     sp, sp, #20     @ return allocated array
+    bl      gamemode        @ return to game menu
 
 
-
+@@ void win()
     .global win
 win:
-    mov     r0, #6
+    mov     r0, #6          @ play claps
     bl      audio
 
-    add     sp, sp, #20
-    bl      gamemode
+    add     sp, sp, #20     @ return allocated array
+    bl      gamemode        @ return to game menu

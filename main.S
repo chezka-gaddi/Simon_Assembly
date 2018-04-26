@@ -182,6 +182,7 @@ main:
 	bl	    gpio_dir_input  @ Blue Button
 	
 
+    @ Set up/down bits for the switches
 	mov	    r0, #5
 	mov	    r1, #2
 	bl	    set_pud
@@ -198,13 +199,12 @@ main:
 	mov	    r1, #2
 	bl	    set_pud
 
-    bl      start_sequence
-    
+
+    bl      start_sequence  @ play start sequence
+                            @ flash lights one at a time with corresponding audio
 
 loop:
-    bl      gamemode
+    bl      gamemode        @ branch to infinite loop of game menu
     b       loop
-    //bl      learn
-    //bl      original
 
     ldmfd	sp!, {r4, pc}

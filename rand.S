@@ -1,54 +1,35 @@
-@@@ Raspberry Pi version
-	.equ	SHORT_DELAY,	50
-	
-    @@  These are the offsets for the GPIO registers that we will use
-	.equ	GPFSEL0,   0x0000
-	.equ	GPFSEL1,   0x0004
-	.equ	GPFSEL2,   0x0008
-	.equ	GPFSEL3,   0x000C
-	.equ	GPFSEL4,   0x0010
-	.equ	GPFSEL5,   0x0014
-	.equ	GPSET0,    0x001C
-	.equ	GPSET1,    0x0020
-	.equ	GPCLR0,    0x0028	
-	.equ	GPCLR1,    0x002c	
 	.equ	GPLEV0,    0x0034
 
-	.equ	GPPUD,     0x0094
-	.equ	GPPUDCLK0, 0x0098
- 	.equ	GPPUDCLK1, 0x009C 
-
-    
     .text
     .global gamemode
 gamemode:
     stmfd   sp!, {r4, lr}
     
-    mov     r0, #17
+    mov     r0, #17         @ play "Welcome"
     bl      audio 
-    mov     r0, #8
+    mov     r0, #8          @ play "Choose Gamemode"
     bl      audio
 
     @@ blink lights and play recording with sound option
     mov     r0, #1
     mov     r1, #9
-    bl      blink
+    bl      blink           @ play "Classic"
 
     mov     r0, #2
     mov     r1, #10
-    bl      blink
+    bl      blink           @ play "Lights Out"
     
     mov     r0, #3
     mov     r1, #11
-    bl      blink
+    bl      blink           @ play "Learn a Song"
     
     mov     r0, #4
     mov     r1, #12
-    bl      blink
+    bl      blink           @ play "Record 20 Notes"
     
     mov     r0, #5
     mov     r1, #23
-    bl      blink
+    bl      blink           @ play "Exit"
 
 
     @@ wait for a button event from the user
@@ -78,7 +59,7 @@ gamemode:
     cmp     r4, #5
     moveq   r0, #18
     bleq    audio
-	cmp	r4,#5
+	cmp	    r4, #5
 	bleq    exit
 
     ldmfd   sp!, {r4, pc}
@@ -117,7 +98,7 @@ loop:
 
     cmp     r0, #0              @ r0: the button that was pressed
     bne     return
-    b	    loop
+    b	    loop                @ loop until a button is pressed
 
 return:
     ldmfd   sp!, {r4, pc}
