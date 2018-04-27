@@ -1,0 +1,89 @@
+@@ classic play mode for Simon
+    
+    .text
+    .global classic
+classic:
+    stmfd   sp!, {r4-r11, lr}
+
+
+	bl	    rand
+	mov	    r6, r0		    @ random  number Do not change
+    mov     r8, #5		    @ r8:size of array
+    sub     sp, sp, r8, lsl #2
+    mov     r4, sp          @ r4: address of array
+    mov     r5, #0          @ r5: counter
+	
+	
+@@ fill gets a random number, stores it into an array, plays the sequence to the user
+@@ and calls input to read in the users reply. This is a loop that goes through until 
+@@ the array is full. If the max sequence is done correctly outputs a cheering sound.	
+classic_loop:
+    mov     r0, r6
+	mov	    r1, r5
+    bl      int_rand			    @ gets a random number
+    str     r0, [r4, r5, lsl #2]	@ stores it into the array at current offset
+    add     r5, r5, #1			    @ increments array size
+
+	bl	delay
+	
+    mov     r0, r4			@ moves array address into r0 
+    mov     r1, r5			@ moves array size into r1
+    bl      playback      	@ calls playback to output current sequence
+
+    mov     r0, r4			@ moves array address into r0
+    mov     r1, r5			@ moves array size into r1
+    bl      input			@ calls input to read in players reply
+
+    cmp     r5, r8			@ checks to see if array is full
+    blt     classic_loop    @ if not full recall fill
+    	
+	ldmfd   sp!, {r4-r11, pc}
+
+
+
+	@@ void input( int *arr[], iny size )
+	@@ reads in the buttons and checks if the right buttons are pressed
+	.global input
+input:
+	stmfd   sp!, {r4-r11, lr}
+
+	mov     r4, r0          @ array address
+	mov     r5, r1          @ # of elements in array
+
+	mov     r6, #0
+in_loop:
+	@@ receives button press from user and blinks the button
+	//ldr     r0, =button_set
+    //ldr     r0, [r0]
+	bl	console
+	cmp     r0, #0
+    bne     check
+	b	in_loop
+	
+    mov     r2, #0
+    mcr     p15, 0, r0, c7, c0, 4
+    b       in_loop
+
+check:
+    ldr     r1, =button_set
+    mov     r2, #0
+    str     r2, [r1]
+
+    mov     r7, r0          @ r7: button pressed
+	bl      blink
+
+	@@ compare the button pressed to the current element in the array
+	ldr     r1, [r4, r6, lsl #2]
+	cmp     r1, r7
+	bne     bad
+    add     r6, r6, #1
+	cmp     r6, r5
+	blt     in_loop         @ continue to check next button press
+    b       exit
+
+bad:
+    bl      flash_all
+
+exit:
+	ldmfd   sp!, {r4-r11, pc}
+
