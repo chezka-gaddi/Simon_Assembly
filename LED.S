@@ -14,49 +14,8 @@ start_sequence:
 
     mov     r7, #0
     mov     r6, #0
-    mov     r5, #0
-flash:
-    mov     r1, #0
-    mov     r2, #0
-
-    @ flash blue led
-    tst     r5, #0b10000
-    orrne   r1, r1, #0x100000
-    orreq   r2, r2, #0x100000
-
-    @ flash red led
-    tst     r5, #0b10100
-    orrne   r1, r1, #0x400000
-    orreq   r2, r2, #0x400000
-
-    @ flash yellow led
-    tst     r5, #0b11000
-    orrne   r1, r1, #0x2000
-    orreq   r2, r2, #0x2000
-    
-    @ flash orange led
-    tst     r5, #0b100
-    orrne   r1, r1, #0x40
-    orreq   r2, r2, #0x40
-
-    @ flash green led
-    tst     r5, #0b1000
-    orrne   r1, r1, #0x10
-    orreq   r2, r2, #0x10
-    
-    str     r2, [r4, #GPSET0]
-    str     r1, [r4, #GPCLR0]
-    
-    cmp     r5, #25
-    addlt   r5, r5, #1
-    movge   r5, #0
-
-    mov     r0, #0x2000
-    bl      usleep
-    add     r7, r7, #1
-    cmp     r7, #0xC000003F
-    blt     flash
-
+	mov     r5, #0
+	bl	    flash_all
     
     mov     r0, #1
     mov     r1, #1
@@ -76,7 +35,44 @@ flash:
 
     ldmfd   sp!, {r4-r7, pc}
 
+	.global flash_all
+flash_all:
+	stmfd	sp!, {r4,lr}
+	
+    mov	    r4,#0
+loop_flash_all:	
+	mov	    r0,#1
+	bl	    led_on
+	mov     r0,#2
+	bl	    led_on
+	mov     r0,#3
+	bl	    led_on
+	mov     r0,#4
+	bl	    led_on
+	mov     r0,#5
+	bl	    led_on
 
+	mov	    r0, #1
+	bl	    sleep
+	
+	mov     r0,#1
+	bl	    led_off
+	mov     r0,#2
+	bl      led_off
+	mov     r0,#3
+	bl      led_off
+	mov     r0,#4
+	bl      led_off
+	mov     r0,#5
+	bl      led_off
+    
+    add     r4, r4, #1
+	cmp     r4,#3
+	blt	    loop_flash_all
+
+	ldmfd	sp!,{r4,pc}
+	
+	
 
 @@ void blink( int button, int audio)
     .global blink

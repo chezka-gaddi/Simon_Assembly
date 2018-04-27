@@ -199,7 +199,7 @@ main:
 	mov	    r1, #2
 	bl	    set_pud
 
-
+	
     bl      start_sequence  @ play start sequence
                             @ flash lights one at a time with corresponding audio
 

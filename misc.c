@@ -104,14 +104,6 @@ int audio( int num )
 }
 
 
-void printArr( int *arr[], int size )
-{
-    printf( "Array Contents: " );
-    for( int i = 0; i < size; i++ )
-        printf( "%d ", arr[i] );
-    printf( "\n" );
-}
-
 
 
 //int_rand returns a random number between 1-5
